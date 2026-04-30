@@ -65,6 +65,18 @@
     .hidden {
       display: none;
     }
+
+      h3 {
+    margin-top: 0;
+    color: #7aa2ff;
+  }
+
+  #results {
+    margin-top: 10px;
+    padding: 10px;
+    background: #111;
+    border-radius: 6px;
+  }
   </style>
 </head>
 
@@ -168,62 +180,81 @@
     });
 
     window.calculate = () => {
-      const buy = parseFloat(document.getElementById("buyPrice").value) || 0;
-      const sell = parseFloat(document.getElementById("sellPrice").value) || 0;
+  const buy = parseFloat(document.getElementById("buyPrice").value) || 0;
+  const sell = parseFloat(document.getElementById("sellPrice").value) || 0;
 
-      const fee = sell * 0.13;
-      const profit = sell - buy - fee;
-      const roi = buy > 0 ? (profit / buy) * 100 : 0;
+  const feeRate = 0.13;
+  const fee = sell * feeRate;
+  const profit = sell - buy - fee;
+  const roi = buy > 0 ? (profit / buy) * 100 : 0;
+  const targetROI = 30; // % you want
+  const maxBuy = sell / (1 + targetROI / 100) - fee;
 
-      document.getElementById("results").innerHTML = `
-        <p>Fee (13%): $${fee.toFixed(2)}</p>
-        <p>Profit: $${profit.toFixed(2)}</p>
-        <p>ROI: ${roi.toFixed(1)}%</p>
-      `;
-    };
+  const color = profit >= 0 ? "#4caf50" : "#ff4d4d";
 
+  document.getElementById("results").innerHTML = `
+    <p>Fee (13%): $${fee.toFixed(2)}</p>
+    <p style="color:${color}"><b>Profit: $${profit.toFixed(2)}</b></p>
+    <p>ROI: ${roi.toFixed(1)}%</p>
+  `;
+};
     window.saveDeal = () => {
-      if (!currentUser) return;
+  if (!currentUser) return;
 
-      const itemName = document.getElementById("itemName").value;
-      const buy = parseFloat(document.getElementById("buyPrice").value) || 0;
-      const sell = parseFloat(document.getElementById("sellPrice").value) || 0;
+  const itemName = document.getElementById("itemName").value.trim();
+  const buy = parseFloat(document.getElementById("buyPrice").value);
+  const sell = parseFloat(document.getElementById("sellPrice").value);
 
-      const fee = sell * 0.13;
-      const profit = sell - buy - fee;
-      const roi = buy > 0 ? (profit / buy) * 100 : 0;
+  if (!itemName || !buy || !sell) {
+    alert("Fill all fields");
+    return;
+  }
 
-      push(ref(db, "deals/" + currentUser.uid), {
-        itemName,
-        buy,
-        sell,
-        profit,
-        roi,
-        createdAt: Date.now()
-      });
-    };
+  const fee = sell * 0.13;
+  const profit = sell - buy - fee;
+  const roi = (profit / buy) * 100;
+
+  push(ref(db, "deals/" + currentUser.uid), {
+    itemName,
+    buy,
+    sell,
+    profit,
+    roi,
+    createdAt: Date.now()
+  });
+
+  // clear inputs
+  document.getElementById("itemName").value = "";
+  document.getElementById("buyPrice").value = "";
+  document.getElementById("sellPrice").value = "";
+  document.getElementById("results").innerHTML = "";
+};
 
     function loadDeals() {
-      const dealsRef = ref(db, "deals/" + currentUser.uid);
+      const dealsArray = Object.entries(data || {}).map(([id, d]) => ({ id, ...d }));
 
-      onValue(dealsRef, (snapshot) => {
-        const data = snapshot.val();
-        const container = document.getElementById("dealList");
-        container.innerHTML = "";
+dealsArray.sort((a, b) => b.createdAt - a.createdAt);
 
-        for (let id in data) {
-          const d = data[id];
-          const div = document.createElement("div");
-          div.className = "deal";
-          div.innerHTML = `
-            <b>${d.itemName}</b><br>
-            Buy: $${d.buy} | Sell: $${d.sell}<br>
-            Profit: $${d.profit.toFixed(2)} | ROI: ${d.roi.toFixed(1)}%
-          `;
-          container.appendChild(div);
-        }
-      });
+dealsArray.forEach(d => {
+  const date = new Date(d.createdAt).toLocaleString();
+  const color = d.profit >= 0 ? "#4caf50" : "#ff4d4d";
+
+  const div = document.createElement("div");
+  div.className = "deal";
+  div.innerHTML = `
+    <b>${d.itemName}</b><br>
+    Buy: $${d.buy} | Sell: $${d.sell}<br>
+    <span style="color:${color}">
+      Profit: $${d.profit.toFixed(2)} | ROI: ${d.roi.toFixed(1)}%
+    </span><br>
+    <small>${date}</small>
+  `;
+  container.appendChild(div);
+});
     }
+    ["buyPrice", "sellPrice"].forEach(id => {
+    document.getElementById(id).addEventListener("input", calculate);
+  });
   </script>
 </body>
 </html>
