@@ -16,158 +16,80 @@ body {
 .container {
   max-width: 420px;
   margin: auto;
-  padding: 12px;
-}
-
-h1 {
-  text-align: center;
-  color: #7aa2ff;
-  font-size: 22px;
-  margin-bottom: 10px;
+  padding: 10px;
 }
 
 .card {
   background: #1a1d24;
   padding: 12px;
-  border-radius: 12px;
-  margin-bottom: 12px;
-}
-
-h3 {
-  margin: 0 0 8px;
-  color: #7aa2ff;
-  font-size: 16px;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 4px 0;
-  border-radius: 8px;
-  border: none;
-  font-size: 14px;
-}
-
-.row {
-  display: flex;
-  gap: 6px;
-}
-
-.row input {
-  flex: 1;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
 button {
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #7aa2ff;
-  color: #000;
-  font-weight: bold;
-  width: 100%;
-  margin-top: 6px;
+  border-radius: 10px;
 }
 
-.small-btn {
-  background: #333;
+input {
+  border-radius: 10px;
+  background: #111;
   color: #fff;
-  font-size: 12px;
 }
 
-.deal {
-  background: #222;
-  padding: 8px;
-  border-radius: 8px;
-  margin-top: 6px;
-  font-size: 13px;
-}
-
-.green { color: #4caf50; }
-.red { color: #ff4d4d; }
-.yellow { color: #ffc107; }
-
-.bar {
-  width: 100%;
-  height: 8px;
-  background: #333;
-  border-radius: 6px;
-  margin-top: 6px;
-}
-
-.fill {
-  height: 100%;
-  width: 0%;
-  background: #4caf50;
-  border-radius: 6px;
-  transition: width 0.3s;
+h1 {
+  font-size: 20px;
+  margin-bottom: 8px;
 }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h1>Flip Finder AI</h1>
 
-    <!-- LOGIN -->
-    <div class="card" id="loginCard">
-      <button onclick="login()">Continue with Google</button>
-    </div>
+  <h1>Flip Finder AI</h1>
 
-    <!-- APP -->
-    <div id="app" class="hidden">
-
-      <!-- USER -->
-      <div class="card">
-        <div id="userInfo"></div>
-        <button onclick="logout()">Logout</button>
-      </div>
-
-      <!-- SCAN (placeholder for Botpress later) -->
-      <div class="card">
-        <h3>Scan Item (coming soon)</h3>
-        <input type="file" id="imageInput" />
-      </div>
-
-      <!-- CALCULATOR -->
-      <div class="card">
-        <h3>Deal Calculator</h3>
-        <input id="itemName" placeholder="Item name" />
-
-<div class="row">
-  <input id="buy" type="number" placeholder="Buy $" />
-  <input id="sell" type="number" placeholder="Sell $" />
-</div>
-
-<div class="row">
-  <input id="fee" type="number" placeholder="Fee %" value="13" />
-  <input id="shipping" type="number" placeholder="Shipping $" value="5" />
-</div>
-
-<label>
-  <input type="checkbox" id="buyerPays" />
-  Buyer pays shipping
-</label>
-
-<input id="targetProfit" type="number" placeholder="Target profit (optional)" />
-
-<div id="results"></div>
-
-<div class="bar">
-  <div id="fill" class="fill"></div>
-</div>
-
-<button onclick="saveDeal()">Save Deal</button>
-      </div>
-
-      <!-- DEAL LOG -->
-      <div class="card">
-        <h3>Your Deals</h3>
-        <button class="small-btn" onclick="clearDeals()">Clear All</button>
-        <div id="dealList"></div>
-      </div>
-
-    </div>
+  <!-- LOGIN -->
+  <div id="loginCard">
+    <button onclick="login()">Continue with Google</button>
   </div>
+
+  <!-- APP -->
+  <div id="app" style="display:none;">
+
+    <!-- HEADER -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span id="userInfo"></span>
+        <button class="small-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- SCAN -->
+    <div class="card">
+      <h3>Scan Item</h3>
+      <input type="file" />
+    </div>
+
+    <!-- CALCULATOR -->
+    <div class="card">
+      <h3>Deal Analyzer</h3>
+
+      <!-- your inputs stay here -->
+      <button style="position:sticky; bottom:0;">Save Deal</button>
+    </div>
+
+    <!-- DEALS -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between;">
+        <h3>Your Deals</h3>
+        <button class="small-btn" onclick="clearDeals()">Clear</button>
+      </div>
+      <div id="dealList"></div>
+    </div>
+
+  </div>
+</div>
 
   <!-- Firebase -->
   <script type="module">
@@ -208,20 +130,25 @@ button {
     };
 
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById("loginCard").classList.add("hidden");
-        document.getElementById("app").classList.remove("hidden");
-        document.getElementById("userInfo").innerText = user.email;
+  const loginCard = document.getElementById("loginCard");
+  const app = document.getElementById("app");
 
-        loadDeals();
-      } else {
-        currentUser = null;
-        document.getElementById("loginCard").classList.remove("hidden");
-        document.getElementById("app").classList.add("hidden");
-      }
-    });
+  if (user) {
+    currentUser = user;
 
+    loginCard.style.display = "none";   // ✅ force hide
+    app.style.display = "block";        // ✅ force show
+
+    document.getElementById("userInfo").innerText = user.email;
+
+    loadDeals();
+  } else {
+    currentUser = null;
+
+    loginCard.style.display = "block";
+    app.style.display = "none";
+  }
+});
     window.calculate = () => {
   const buy = parseFloat(document.getElementById("buy").value) || 0;
   const sell = parseFloat(document.getElementById("sell").value) || 0;
@@ -317,10 +244,15 @@ dealsArray.forEach(d => {
   div.className = "deal";
 
   div.innerHTML = `
-    <b>${d.itemName}</b><br>
-    Profit: $${d.profit.toFixed(2)} | ROI: ${d.roi.toFixed(1)}%<br>
-    <button class="small-btn" onclick="deleteDeal('${d.id}')">Delete</button>
-  `;
+  <b>${d.itemName}</b>
+  <div style="font-size:12px;">
+    Buy $${d.buy} → Sell $${d.sell}
+  </div>
+  <div class="${d.profit >= 0 ? 'green' : 'red'}">
+    $${d.profit.toFixed(2)} • ${d.roi.toFixed(1)}%
+  </div>
+  <button class="small-btn" onclick="deleteDeal('${d.id}')">Delete</button>
+`;
 
   container.appendChild(div);
 });
