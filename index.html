@@ -41,6 +41,31 @@ h1 {
   font-size: 20px;
   margin-bottom: 8px;
 }
+
+  #accountChip {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: #1a1d24;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  z-index: 1000;
+}
+
+#accountChip button {
+  background: #333;
+  color: #fff;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  padding: 0;
+}
   </style>
 </head>
 
@@ -58,12 +83,10 @@ h1 {
   <div id="app" style="display:none;">
 
     <!-- HEADER -->
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span id="userInfo"></span>
-        <button class="small-btn" onclick="logout()">Logout</button>
-      </div>
-    </div>
+  <div id="accountChip">
+    <span id="userInfo"></span>
+    <button onclick="logout()">⎋</button>
+  </div>
 
     <!-- SCAN -->
     <div class="card">
@@ -73,7 +96,36 @@ h1 {
 
     <!-- CALCULATOR -->
     <div class="card">
-      <h3>Deal Analyzer</h3>
+  <h3>Deal Analyzer</h3>
+
+  <input id="itemName" placeholder="Item name" />
+
+  <div class="row">
+    <input id="buy" type="number" placeholder="Buy $" />
+    <input id="sell" type="number" placeholder="Sell $" />
+  </div>
+
+  <div class="row">
+    <input id="fee" type="number" placeholder="Fee %" value="13" />
+    <input id="shipping" type="number" placeholder="Shipping $" value="5" />
+  </div>
+
+  <label style="font-size:13px;">
+    <input type="checkbox" id="buyerPays" />
+    Buyer pays shipping
+  </label>
+
+  <input id="targetProfit" type="number" placeholder="Target profit (optional)" />
+
+  <div id="results"></div>
+
+  <!-- Confidence bar -->
+  <div class="bar">
+    <div id="fill" class="fill"></div>
+  </div>
+
+  <button onclick="saveDeal()">Save Deal</button>
+</div>
 
       <!-- your inputs stay here -->
       <button style="position:sticky; bottom:0;">Save Deal</button>
