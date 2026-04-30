@@ -6,77 +6,101 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f1115;
-      color: #fff;
-      margin: 0;
-      padding: 20px;
-    }
+body {
+  font-family: system-ui, Arial, sans-serif;
+  background: #0f1115;
+  color: #fff;
+  margin: 0;
+}
 
-    h1 {
-      text-align: center;
-      color: #7aa2ff;
-    }
+.container {
+  max-width: 420px;
+  margin: auto;
+  padding: 12px;
+}
 
-    .container {
-      max-width: 700px;
-      margin: auto;
-    }
+h1 {
+  text-align: center;
+  color: #7aa2ff;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
 
-    .card {
-      background: #1a1d24;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
+.card {
+  background: #1a1d24;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 6px;
-      border: none;
-    }
+h3 {
+  margin: 0 0 8px;
+  color: #7aa2ff;
+  font-size: 16px;
+}
 
-    button {
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      background: #7aa2ff;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 5px;
-    }
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 4px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+}
 
-    button:hover {
-      opacity: 0.9;
-    }
+.row {
+  display: flex;
+  gap: 6px;
+}
 
-    .deal {
-      background: #222;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 6px;
-    }
+.row input {
+  flex: 1;
+}
 
-    .hidden {
-      display: none;
-    }
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #7aa2ff;
+  color: #000;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 6px;
+}
 
-      h3 {
-    margin-top: 0;
-    color: #7aa2ff;
-  }
+.small-btn {
+  background: #333;
+  color: #fff;
+  font-size: 12px;
+}
 
-  #results {
-    margin-top: 10px;
-    padding: 10px;
-    background: #111;
-    border-radius: 6px;
-  }
+.deal {
+  background: #222;
+  padding: 8px;
+  border-radius: 8px;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.green { color: #4caf50; }
+.red { color: #ff4d4d; }
+.yellow { color: #ffc107; }
+
+.bar {
+  width: 100%;
+  height: 8px;
+  background: #333;
+  border-radius: 6px;
+  margin-top: 6px;
+}
+
+.fill {
+  height: 100%;
+  width: 0%;
+  background: #4caf50;
+  border-radius: 6px;
+  transition: width 0.3s;
+}
   </style>
 </head>
 
@@ -108,19 +132,37 @@
       <div class="card">
         <h3>Deal Calculator</h3>
         <input id="itemName" placeholder="Item name" />
-        <input id="buyPrice" type="number" placeholder="Buy price" />
-        <input id="sellPrice" type="number" placeholder="Sell price" />
 
-        <button onclick="calculate()">Calculate</button>
+<div class="row">
+  <input id="buy" type="number" placeholder="Buy $" />
+  <input id="sell" type="number" placeholder="Sell $" />
+</div>
 
-        <div id="results"></div>
+<div class="row">
+  <input id="fee" type="number" placeholder="Fee %" value="13" />
+  <input id="shipping" type="number" placeholder="Shipping $" value="5" />
+</div>
 
-        <button onclick="saveDeal()">Save Deal</button>
+<label>
+  <input type="checkbox" id="buyerPays" />
+  Buyer pays shipping
+</label>
+
+<input id="targetProfit" type="number" placeholder="Target profit (optional)" />
+
+<div id="results"></div>
+
+<div class="bar">
+  <div id="fill" class="fill"></div>
+</div>
+
+<button onclick="saveDeal()">Save Deal</button>
       </div>
 
       <!-- DEAL LOG -->
       <div class="card">
         <h3>Your Deals</h3>
+        <button class="small-btn" onclick="clearDeals()">Clear All</button>
         <div id="dealList"></div>
       </div>
 
@@ -132,6 +174,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
   apiKey: "AIzaSyCUXGwHEoTSiK8ZvIkCXUGPmvk1z3NU3_M",
@@ -180,24 +223,58 @@
     });
 
     window.calculate = () => {
-  const buy = parseFloat(document.getElementById("buyPrice").value) || 0;
-  const sell = parseFloat(document.getElementById("sellPrice").value) || 0;
+  const buy = parseFloat(document.getElementById("buy").value) || 0;
+  const sell = parseFloat(document.getElementById("sell").value) || 0;
+  const feePercent = parseFloat(document.getElementById("fee").value) || 13;
+  const shippingInput = parseFloat(document.getElementById("shipping").value) || 5;
+  const buyerPays = document.getElementById("buyerPays").checked;
+  const targetProfit = parseFloat(document.getElementById("targetProfit").value) || 0;
 
-  const feeRate = 0.13;
-  const fee = sell * feeRate;
-  const profit = sell - buy - fee;
+  const shipping = buyerPays ? 0 : shippingInput;
+  const fees = sell * (feePercent / 100);
+  const profit = sell - buy - fees - shipping;
   const roi = buy > 0 ? (profit / buy) * 100 : 0;
-  const targetROI = 30; // % you want
-  const maxBuy = sell / (1 + targetROI / 100) - fee;
 
-  const color = profit >= 0 ? "#4caf50" : "#ff4d4d";
+  let maxBuy = sell - fees - shipping;
+  if (targetProfit > 0) {
+    maxBuy = sell - fees - shipping - targetProfit;
+  }
+
+  let decision = "", cls = "", insight = "", confidence = 0;
+
+  if (profit > 0 && roi > 50) {
+    decision = "🔥 BUY"; cls = "green";
+    insight = "Excellent margin. Strong flip.";
+    confidence = 90;
+  } else if (profit > 0 && roi > 25) {
+    decision = "✅ GOOD"; cls = "green";
+    insight = "Solid deal worth considering.";
+    confidence = 65;
+  } else if (profit > 0) {
+    decision = "⚠️ RISKY"; cls = "yellow";
+    insight = "Low margin. Be cautious.";
+    confidence = 45;
+  } else {
+    decision = "❌ SKIP"; cls = "red";
+    insight = "Not profitable.";
+    confidence = 15;
+  }
 
   document.getElementById("results").innerHTML = `
-    <p>Fee (13%): $${fee.toFixed(2)}</p>
-    <p style="color:${color}"><b>Profit: $${profit.toFixed(2)}</b></p>
-    <p>ROI: ${roi.toFixed(1)}%</p>
+    <b class="${cls}">${decision}</b><br>
+    Profit: $${profit.toFixed(2)}<br>
+    ROI: ${roi.toFixed(1)}%<br>
+    Max Buy: $${maxBuy.toFixed(2)}<br>
+    <small>${insight}</small>
   `;
+
+  const fill = document.getElementById("fill");
+  fill.style.width = confidence + "%";
+  fill.style.background =
+    confidence > 70 ? "#4caf50" :
+    confidence > 40 ? "#ffc107" : "#ff4d4d";
 };
+    
     window.saveDeal = () => {
   if (!currentUser) return;
 
@@ -236,25 +313,37 @@
 dealsArray.sort((a, b) => b.createdAt - a.createdAt);
 
 dealsArray.forEach(d => {
-  const date = new Date(d.createdAt).toLocaleString();
-  const color = d.profit >= 0 ? "#4caf50" : "#ff4d4d";
-
   const div = document.createElement("div");
   div.className = "deal";
+
   div.innerHTML = `
     <b>${d.itemName}</b><br>
-    Buy: $${d.buy} | Sell: $${d.sell}<br>
-    <span style="color:${color}">
-      Profit: $${d.profit.toFixed(2)} | ROI: ${d.roi.toFixed(1)}%
-    </span><br>
-    <small>${date}</small>
+    Profit: $${d.profit.toFixed(2)} | ROI: ${d.roi.toFixed(1)}%<br>
+    <button class="small-btn" onclick="deleteDeal('${d.id}')">Delete</button>
   `;
+
   container.appendChild(div);
 });
+
     }
     ["buyPrice", "sellPrice"].forEach(id => {
     document.getElementById(id).addEventListener("input", calculate);
   });
+    ["buy","sell","fee","shipping","targetProfit"].forEach(id => {
+  document.getElementById(id).addEventListener("input", calculate);
+});
+
+document.getElementById("buyerPays").addEventListener("change", calculate);
+
+    window.deleteDeal = (id) => {
+  remove(ref(db, "deals/" + currentUser.uid + "/" + id));
+};
+
+window.clearDeals = () => {
+  if (confirm("Delete all deals?")) {
+    remove(ref(db, "deals/" + currentUser.uid));
+  }
+};
   </script>
 </body>
 </html>
