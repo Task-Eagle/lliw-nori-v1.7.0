@@ -140,8 +140,14 @@
     let currentUser = null;
 
     window.login = async () => {
-      await signInWithPopup(auth, provider);
-    };
+  try {
+    const result = await signInWithPopup(auth, provider);
+    console.log("Logged in:", result.user);
+  } catch (err) {
+    console.error("Login error:", err);
+    alert(err.message);
+  }
+};
 
     window.logout = async () => {
       await signOut(auth);
