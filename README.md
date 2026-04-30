@@ -1,0 +1,1 @@
+//! --This version allows users to upload pictures and get instant results of similar items and auto-fill the input price fields using Botpress. Also, we are using Firebase from Google LLC to create user accounts that sync deals across devices.
