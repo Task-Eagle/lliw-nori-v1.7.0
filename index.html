@@ -32,9 +32,14 @@ button {
 }
 
 input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
   border-radius: 10px;
+  border: none;
   background: #111;
   color: #fff;
+  font-size: 14px;
 }
 
 h1 {
@@ -66,6 +71,16 @@ h1 {
   font-size: 12px;
   padding: 0;
 }
+
+.row {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.row input {
+  flex: 1;
+}
   </style>
 </head>
 
@@ -89,13 +104,14 @@ h1 {
   </div>
 
     <!-- SCAN -->
-    <div class="card">
-      <h3>Scan Item</h3>
-      <input type="file" />
-    </div>
+<div class="card">
+  <h3>Scan Item</h3>
+  <input type="file" />
+  <button style="margin-top:8px;">Analyze (coming soon)</button>
+</div>
 
     <!-- CALCULATOR -->
-    <div class="card">
+<div class="card">
   <h3>Deal Analyzer</h3>
 
   <input id="itemName" placeholder="Item name" />
@@ -106,18 +122,19 @@ h1 {
   </div>
 
   <div class="row">
-    <input id="fee" type="number" placeholder="Fee %" value="13" />
-    <input id="shipping" type="number" placeholder="Shipping $" value="5" />
+    <input id="fee" type="number" value="13" />
+    <input id="shipping" type="number" value="5" />
   </div>
 
-  <label style="font-size:13px;">
-    <input type="checkbox" id="buyerPays" />
-    Buyer pays shipping
-  </label>
+  <div class="row" style="align-items:center;">
+    <label style="flex:1; font-size:13px;">
+      <input type="checkbox" id="buyerPays" />
+      Buyer pays shipping
+    </label>
+    <input id="targetProfit" type="number" placeholder="Target profit" style="flex:1;" />
+  </div>
 
-  <input id="targetProfit" type="number" placeholder="Target profit (optional)" />
-
-  <div id="results"></div>
+  <div id="results" style="margin-top:8px;"></div>
 
   <!-- Confidence bar -->
   <div class="bar">
